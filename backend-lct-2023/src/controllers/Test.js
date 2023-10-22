@@ -11,7 +11,7 @@ const customCrud = () => ({
      */
       async get({params: {id}}, res) {
         try {
-            const item = await Test.findOne({'hashId': id})
+            const item = await Test.findById(id)
             return res.status(200).send(item)
 
         } catch (err) {
