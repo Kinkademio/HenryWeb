@@ -114,10 +114,6 @@ export default {
       }
     },
     async saveTest(){
-      console.log({
-            taskName: this.testName,
-            tasks: this.tasks
-          });
       const res = await api.post(
           "api/test",
           {
@@ -129,9 +125,9 @@ export default {
           }
         }
         );
-      if(res){
+      if(res.status == 200){
         this.testCreated = true;
-        this.createdTestId = res._id;
+        this.createdTestId = res.data._id;
       }
     },
 

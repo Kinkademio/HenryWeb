@@ -1,20 +1,28 @@
 <template>
   <div>
     <template v-if="allTests.length > 0">
-      <q-card class="q-pa-lg" v-for="(test, index) in allTests" :key="index">
-        <q-card-header>
-          Тест: {{ test.taskName }}
+      <q-card class="q-pa-lg q-mb-md" v-for="(test, index) in allTests" :key="index">
+        <q-card-header class="text-h6">
+          <div>
+            Тест: {{ test.taskName }}
+          </div>
+          <div class="testCreated">
+            Идентификатор: {{ test._id }}
+          </div>
         </q-card-header>
-        <q-card-actions align="between">
-          <q-btn flat color="positive" label="Редактировать" @click="editModal = true; currentEditTask = test"></q-btn>
-          <q-btn flat color="negative" label="Удалить" @click="deleteTest(test._id)"></q-btn>
+        <q-card-actions align="between" class="q-px-none">
+          <q-btn color="positive" label="Редактировать" @click="editModal = true; currentEditTask = test"></q-btn>
+          <q-btn color="negative" label="Удалить" @click="deleteTest(test._id)"></q-btn>
         </q-card-actions>
       </q-card>
     </template>
+
     <q-card class="q-pa-lg" v-else>
       <div class="text-h6"> У вас еще нет тестов!</div>
     </q-card>
-    <q-dialog v-model="dialog" persistent :maximized="editModal" transition-show="slide-up" transition-hide="slide-down">
+
+    <q-dialog v-model="editModal" persistent :maximized="editModal" transition-show="slide-up"
+      transition-hide="slide-down">
       <q-card class="bg-primary text-white">
         <q-bar>
           <q-space></q-space>
@@ -26,7 +34,7 @@
           <div class="text-h6">Редактирование задания</div>
         </q-card-section>
         <q-card-section class="q-pt-none">
-          <q-card>
+          <q-card class="modal">
             <q-card-section>
               <q-input v-model="currentEditTask.taskName" label="Название теста"></q-input>
             </q-card-section>
@@ -35,7 +43,7 @@
               <q-card class="q-ma-md task" v-for="(one, i) in currentEditTask.tasks" :key="one">
                 <q-card-section class="text-h6">
                   Задание {{ i + 1 }}
-                  <q-btn flat color="negative" icon="delete" @click="deleteTask(i)"></q-btn>
+                  <q-btn flat color="negative" icon="delete" @click="deleteTask(currentEditTask, i)"></q-btn>
                 </q-card-section>
                 <q-card-section>
                   <q-input label="Введите текст задания" v-model="one.text"></q-input>
@@ -61,11 +69,11 @@
                   <q-btn flat color="positive" label="Добавить ответ" icon="add" @click="addAnsver(one.ansvers)"></q-btn>
                 </q-card-section>
               </q-card>
-              <q-btn flat label="Добавить задание" color="positive" icon="add" @click="addTask"></q-btn>
+              <q-btn flat label="Добавить задание" color="positive" icon="add" @click="addTask(currentEditTask)"></q-btn>
             </q-card-section>
             <q-card-actions align="between">
-              <q-btn label="Сохранить" color="positive" @click="saveTest"></q-btn>
-              <q-btn label="Очистить" color="negative" @click="clearAll"></q-btn>
+              <q-btn label="Сохранить" color="positive" @click="saveTest(currentEditTask, currentEditTask._id)"></q-btn>
+              <q-btn label="Очистить" color="negative" @click="clearAll(currentEditTask)"></q-btn>
             </q-card-actions>
           </q-card>
         </q-card-section>
@@ -88,7 +96,7 @@ export default {
     };
   },
   mounted() {
-
+    this.getAllTests();
   },
   methods: {
     async getAllTests() {
@@ -101,62 +109,76 @@ export default {
         }
       );
       if (res) {
-        this.allTests = res;
+        this.allTests = res.data;
       }
     },
-    deleteTest(id) {
-      api.delete({
-        _id: id
-      });
-      this.getAllTests();
+    async deleteTest(id) {
+      const res = await api.delete(
+        "api/test/" + id,
+        {
+          headers: {
+            "x-requested-with": "*",
+          }
+        }
+      );
+      if (res) {
+        this.getAllTests();
+      }
     },
-    addTask(){
+
+    clearAll(object) {
+      object.tasks = [];
+      object.testName = '';
+    },
+
+    addTask(object) {
       let clone = {
         text: '',
         ansvers: []
       };
-      this.tasks.push(clone);
+      object.tasks.push(clone);
     },
-    deleteTask(index){
-      this.tasks.splice(index, 1)
+
+    deleteTask(object, index) {
+      object.tasks.splice(index, 1)
     },
-    addAnsver(obj){
+
+    async saveTest(object, id) {
+      const res = await api.put(
+        "api/test/" + id,
+        {
+          taskName: object.testName,
+          tasks: object.tasks
+        }, {
+        headers: {
+          "x-requested-with": "*",
+        }
+      }
+      );
+      if (res.status == 200) {
+        this.$q.notify({
+          type: 'positive',
+          message: 'Изменения сохранены'
+        });
+      }
+    },
+    addAnsver(obj) {
       let clone = {
         text: '',
         right: false
       };
       obj.push(clone);
     },
-    deleteAns(obj, index){
+    deleteAns(obj, index) {
       obj.splice(index, 1);
     },
-    clearAll(){
-      this.tasks = [];
-      this.testName = '';
-    },
-    makeOnlyOneRight(parent, index){
-      for(let ind = 0; ind< parent.length; ind++){
+
+    makeOnlyOneRight(parent, index) {
+      for (let ind = 0; ind < parent.length; ind++) {
         parent[ind].right = false;
-        if(index == ind) {
+        if (index == ind) {
           parent[ind].right = true;
         }
-      }
-    },
-    async saveTest(){
-      const res = await api.post(
-          "api/test",
-          {
-            taskName: this.testName,
-            tasks: this.tasks
-          },{
-          headers: {
-            "x-requested-with": "*",
-          }
-        }
-        );
-      if(res){
-        this.testCreated = true;
-        this.createdTestId = res._id;
       }
     },
   }
@@ -164,13 +186,17 @@ export default {
 
 </script>
 <style scoped>
-.task{
-background-color: #d4ddcd;
+.task {
+  background-color: #d4ddcd;
 }
-.testCreated{
+
+.testCreated {
   color: #205d3b;
 }
-.ansver{
-  background-color: #dbd3d4;
+.modal{
+  color: black;
 }
-</style>
+
+.ansver {
+  background-color: #dbd3d4;
+}</style>

@@ -10,6 +10,7 @@
       <q-tabs align="left" v-model="tabs">
         <q-route-tab name="create" to="/create" label="Создать тест" />
         <q-route-tab name="edit" to="/edit" label="Редактировать тест" />
+        <q-route-tab name="test" to="/test" label="Тестирование" />
       </q-tabs>
     </q-header>
 
@@ -21,6 +22,7 @@
 </template>
 
 <script>
+import {ref} from 'vue';
 export default {
   setup() {
     return {
@@ -28,7 +30,7 @@ export default {
   },
   data() {
     return {
-      tabs: "create"
+      tabs: ref('create')
     };
   },
   mounted() {

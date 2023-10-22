@@ -7,6 +7,7 @@ const routes = [{
     path: '/',
     component: Main,
     name: 'main',
+    redirect: '/create',
     children:[
       {
         path: '/create',
