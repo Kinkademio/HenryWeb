@@ -1,8 +1,9 @@
 const {model, Schema} = require('mongoose');
+const shortid = require('shortid');
 var schema = new Schema({
   _id: {
     type: String,
-    default: Math.floor(Math.random() * (99999 - 10000) + 10000) //Генерируем рандомный id шник 
+    default: shortid.generate
   },
   taskName:{
     type: String,

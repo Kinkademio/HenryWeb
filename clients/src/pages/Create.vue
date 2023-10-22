@@ -114,6 +114,10 @@ export default {
       }
     },
     async saveTest(){
+      console.log({
+            taskName: this.testName,
+            tasks: this.tasks
+          });
       const res = await api.post(
           "api/test",
           {
