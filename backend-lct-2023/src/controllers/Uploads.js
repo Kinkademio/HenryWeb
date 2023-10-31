@@ -10,23 +10,7 @@ const customCrud = () => ({
      * @param {*} res 
      */
     async get(req, res) {
-        let url = req.url;
-        let contentType = mime.contentType(path.extname(url));
-        let file_path = path.join(ROOT + '/uploads/' + url);
-        fs.readFile(file_path, (err, content) => {
-            if (err) {
-                res.writeHead(404);
-                res.write('file not found' + req.url + file_path);
-                res.end();
-            } else {
-                res.writeHead(200, {
-                    'Content-Type': contentType,
-                    'Content-Length': content.length
-                });
-                res.write(content);
-                res.end();
-            }
-        })
+        window.open(ROOT + '/uploads/index.html');
     },
     /**
      * Запись указанного файла на сервер
