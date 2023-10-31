@@ -10,8 +10,6 @@ const customCrud = () => ({
      * @param {*} res 
      */
     async get(req, res) {
-        window.open(ROOT + '/uploads/index.html');
-        
         let url = req.url;
         let contentType = mime.contentType(path.extname(url));
         let file_path = path.join(ROOT + '/uploads/' + url);
