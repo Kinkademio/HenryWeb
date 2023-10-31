@@ -1,3 +1,3 @@
 module.exports ={
-    routes:['test']
+    routes:['test', 'uploads']
 }
